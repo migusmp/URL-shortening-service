@@ -1,0 +1,16 @@
+# Binaries
+/bin/
+/server
+*.exe
+
+# Env
+.env
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Go
+coverage.out
