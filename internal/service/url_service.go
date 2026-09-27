@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/url"
@@ -79,7 +80,7 @@ func (s *URLService) Create(ctx context.Context, in CreateInput) (*domain.URL, e
 		}
 		u, err := s.store.Create(ctx, generated, longURL)
 		if err != nil {
-			if err == domain.ErrConflict {
+			if errors.Is(err, domain.ErrConflict) {
 				continue
 			}
 			return nil, err

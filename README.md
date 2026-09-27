@@ -501,14 +501,35 @@ curl -i -X DELETE http://localhost:8080/api/v1/urls/docs \
 ## Tests
 
 ```bash
+# Unit tests (always runnable; Redis covered via miniredis)
 go test ./...
+
+# With live Postgres + Redis integration tests
+export DATABASE_URL='postgres://urlshortener:urlshortener@localhost:5432/urlshortener?sslmode=disable'
+export REDIS_ADDR='localhost:6379'
+go test ./...
+
+# Coverage summary
+go test ./... -cover
 ```
+
+Integration notes:
+
+- `internal/database` and `internal/repository` tests use `TEST_DATABASE_URL` or `DATABASE_URL` (skip if unset/unreachable).
+- Live Redis checks use `TEST_REDIS_ADDR` or `REDIS_ADDR` (skip if unreachable).
+- Cache/rate-limit unit tests use in-memory [miniredis](https://github.com/alicebob/miniredis) and do not need a real Redis instance.
 
 Main coverage:
 
-- Service: create (custom and generated), conflicts, cache-first redirect, DB fallback, update/delete invalidation
-- Middleware: missing / invalid / valid API key
-- Rate limit: allows within limit, denies when exceeded
+- `config`: load defaults, custom values, missing/invalid env
+- `shortcode`: generate length, alphabet, uniqueness
+- `cache`: get/set/delete, TTL expiry, rate limiter allow/deny/reset
+- `database`: Postgres/Redis connect success and failure
+- `repository`: CRUD, conflicts, not found (Postgres)
+- `service`: create/get/update/delete/redirect, validation, cache-first, fallback
+- `handler`: all HTTP handlers and error mappings
+- `middleware`: API key and rate limit middleware
+- `server`: router wiring for health, API auth, and redirect
 
 ---
 
